@@ -1,12 +1,13 @@
 import streamlit as st
 from main import get_response
+from config import firebase_credential
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
 # Firebase Admin SDKの初期化
 if not firebase_admin._apps:
-    cred = credentials.Certificate('chatbot-e8214-firebase-adminsdk-ungkz-7a18333fab.json')
+    cred = credentials.Certificate(firebase_credential)
     firebase_admin.initialize_app(cred)
 
 # Firestoreのインスタンスを取得
@@ -21,7 +22,7 @@ st.title("プレゼミ　チャットボット")
 
 # セッションステートの初期化
 if "messages" not in st.session_state:
-    st.session_state["messages"] = []
+    st.session_state["messages"] = [{"role": "AI", "content": "今日は何がありましたか？"}]
 if 'count' not in st.session_state:
     st.session_state.count = 0
 
