@@ -1,6 +1,7 @@
 import os
 import openai
 from config import openai_key
+from human_description import description
 import pandas as pd
 from datetime import datetime
 
@@ -39,7 +40,10 @@ for line in lines:
         {
           "role": "system",
           "content": "For the following task, respond in a way that matches this BIG FIVE personality questionnaire:\n"
-                     f"Extraversion: {prompt_bigfive[0]}, Agreeableness: {prompt_bigfive[1]}, Conscientiousness: {prompt_bigfive[2]}, Neuroticism: {prompt_bigfive[3]}, Openness: {prompt_bigfive[4]}\n"
+                     f"Extraversion: {prompt_bigfive[0]}, Agreeableness: {prompt_bigfive[1]}, Conscientiousness: {prompt_bigfive[2]}, Neuroticism: {prompt_bigfive[3]}, Openness: {prompt_bigfive[4]}\n\n"
+                     "Additionally, respond in a way that mathces this description:\n"
+                     f"{description}\n\n"
+                     "Your response should be in accordance with the personality and description provided above."
         },
         {
           "role": "user",
@@ -62,5 +66,5 @@ for line in lines:
 #結果リストをcsvファイルに出力
 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 output_data = result + [timestamp]
-pd.DataFrame([output_data]).to_csv(result_file, index=True, header=False, mode="a")   
+pd.DataFrame([output_data]).to_csv(result_file, index=False, header=False, mode="a")   
 print(f"Results saved to {result_file}.")
