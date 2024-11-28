@@ -2,10 +2,12 @@ import os
 import openai
 from config import openai_key
 import pandas as pd
+from datetime import datetime
 
 parent_directory = os.path.abspath(os.path.join('persona_output.py', '..'))
 task_file = os.path.join(parent_directory, 'data', 'test_data', 'task.txt')
 bigfive_file = os.path.join(parent_directory, 'data', 'test_data', 'bigfive.csv')
+result_file = os.path.join(parent_directory, 'data', 'test_data', 'result.csv')
 
 openai.api_key=openai_key
 
@@ -28,9 +30,8 @@ for score in bigfive_list:
 
 
 #判断タスクファイルから一行ずつ取り出して全て判断させる
+result = []
 for line in lines:     
-  print(line)
-
   # プロンプトを基に出力させるようにする
   response = openai.chat.completions.create(
       model="gpt-4o",
@@ -55,5 +56,11 @@ for line in lines:
       max_tokens=1,
   )
 
-  #結果をcsvファイルに出力
-  print(response.choices[0].message.content)
+  #結果をリストに保存
+  result.append(response.choices[0].message.content)
+
+#結果リストをcsvファイルに出力
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+output_data = result + [timestamp]
+pd.DataFrame([output_data]).to_csv(result_file, index=True, header=False, mode="a")   
+print(f"Results saved to {result_file}.")
