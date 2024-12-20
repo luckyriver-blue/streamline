@@ -18,7 +18,7 @@ def add_data(collection_name, document_id, data):
     db.collection(collection_name).document(document_id).set(data)
 
 
-st.title("プレゼミ　チャットボット")
+st.title("チャットボット")
 
 # セッションステートの初期化
 if "messages" not in st.session_state:
@@ -33,7 +33,7 @@ for message in st.session_state["messages"]:
 
 if st.session_state.count >= 5:
     add_data('users', 'user1', {"messages": st.session_state["messages"]})
-    st.markdown('これで今回の会話は終了です。<a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_5cZeI9RbaCdozTU">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True)
+    st.markdown('これで今日の会話は終了です。', unsafe_allow_html=True)
 
 #ユーザーの入力
 user_input = st.chat_input(placeholder="ユーザーの入力")

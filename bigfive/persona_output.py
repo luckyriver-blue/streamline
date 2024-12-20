@@ -4,30 +4,17 @@ from config import openai_key
 from human_description import description
 import pandas as pd
 from datetime import datetime
+from bigfive.read_bigfive import prompt_bigfive 
 
 parent_directory = os.path.abspath(os.path.join('persona_output.py', '..'))
 task_file = os.path.join(parent_directory, 'data', 'test_data', 'task.txt')
-bigfive_file = os.path.join(parent_directory, 'data', 'test_data', 'bigfive.csv')
-result_file = os.path.join(parent_directory, 'data', 'test_data', 'result.csv')
+result_file = os.path.join(parent_directory, 'data', 'experiment_data', 'task_ai_prediction', 'result.csv')
 
 openai.api_key=openai_key
 
 #タスク判断課題の文章を一文ずつリスト化
 with open(task_file, 'r', encoding='utf-8') as task_data:
   lines = [s.rstrip() for s in task_data.readlines()]
-
-#ビッグファイブのcsvファイルを読み取りLOW・MEDIUM・HIGHでリスト化
-with open(bigfive_file, 'r', encoding='utf-8') as bigfive_data:
-  bigfive_list = [float(i) for i in bigfive_data.readline().strip().split(',')]
-#とりあえず5段階のデータで考える。とりあえずMEDIUMを2.5以上3.5未満として出す。
-prompt_bigfive = []
-for score in bigfive_list:
-  if score >= 3.5:
-    prompt_bigfive.append('HIGH')
-  elif score >= 2.5:
-    prompt_bigfive.append('MEDIUM')
-  else:
-    prompt_bigfive.append('LOW')
 
 
 #判断タスクファイルから一行ずつ取り出して全て判断させる
