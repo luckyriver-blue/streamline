@@ -24,7 +24,9 @@ prompt_template = PromptTemplate(
     Neuroticism: {neuroticism}, 
     Openness: {openness}
 
-    ユーザーの性格を参照して、ユーザーの性格を理解して会話してください。
+    ユーザーの性格を参照して、ユーザーにとって最適な会話を心がけてください。
+    ユーザーの性格のスコアには言及しないでください。
+    300文字以内で回答してください。
     以下は会話の履歴です：\n{{history}}\n\nユーザーの入力：{{input}}
     """
 )
