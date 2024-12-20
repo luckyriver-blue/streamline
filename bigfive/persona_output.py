@@ -34,14 +34,9 @@ for line in lines:
         },
         {
           "role": "user",
-          "content": "Please rate the following statement by selecting a number from 1 to 5, where:\n"
-                     "1 = not applicable at all,\n"
-                     "2 = not applicable,\n"
-                     "3 = neutral,\n"
-                     "4 = applicable,\n"
-                     "5 = strongly applicable.\n\n"
+          "content": "Please rate the following statement by selecting a number between 1 and 2.\n"
                      f"Statement: {line}\n"
-                     "Please ensure that your response is a number between 1 and 5."
+                     "Please ensure that your response is a number between 1 and 2."
         },
       ],
       max_tokens=1,
