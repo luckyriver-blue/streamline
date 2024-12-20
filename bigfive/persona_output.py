@@ -19,6 +19,60 @@ with open(task_file, 'r', encoding='utf-8') as task_data:
 
 #判断タスクファイルから一行ずつ取り出して全て判断させる
 result = []
+
+#会話の履歴だけで予測
+for line in lines:     
+  # プロンプトを基に出力させるようにする
+  response = openai.chat.completions.create(
+      model="gpt-4o",
+      messages=[
+        {
+          "role": "system",
+          "content": "For the following task, respond in a way that mathces this description:\n"
+                     f"{description}\n\n"
+                     "Your response should be in accordance with the description provided above."
+        },
+        {
+          "role": "user",
+          "content": "Please rate the following statement by selecting a number between 1 and 2.\n"
+                     f"Statement: {line}\n"
+                     "Please ensure that your response is a number between 1 and 2."
+        },
+      ],
+      max_tokens=1,
+  )
+
+  #結果をリストに保存
+  result.append(response.choices[0].message.content)
+
+
+#ビッグファイブデータだけで予測
+for line in lines:     
+  # プロンプトを基に出力させるようにする
+  response = openai.chat.completions.create(
+      model="gpt-4o",
+      messages=[
+        {
+          "role": "system",
+          "content": "For the following task, respond in a way that matches this BIG FIVE personality questionnaire:\n"
+                     f"Extraversion: {prompt_bigfive[0]}, Agreeableness: {prompt_bigfive[1]}, Conscientiousness: {prompt_bigfive[2]}, Neuroticism: {prompt_bigfive[3]}, Openness: {prompt_bigfive[4]}\n\n"
+                     "Your response should be in accordance with the personality provided above."
+        },
+        {
+          "role": "user",
+          "content": "Please rate the following statement by selecting a number between 1 and 2.\n"
+                     f"Statement: {line}\n"
+                     "Please ensure that your response is a number between 1 and 2."
+        },
+      ],
+      max_tokens=1,
+  )
+
+  #結果をリストに保存
+  result.append(response.choices[0].message.content)
+
+
+#会話の履歴とビッグファイブデータ両方で予測
 for line in lines:     
   # プロンプトを基に出力させるようにする
   response = openai.chat.completions.create(
