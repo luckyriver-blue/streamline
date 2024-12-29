@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 from datetime import datetime
-from bigfive.read_bigfive import prompt_bigfive 
 
 parent_directory = os.path.abspath(os.path.join('calculate_correct_rate.py', '..'))
 ai_prediction_file = os.path.join(parent_directory, 'data', 'experiment_data', 'task_ai_prediction', 'result.csv')
