@@ -30,15 +30,29 @@ if 'count' not in st.session_state:
 
 memory = ConversationBufferMemory()
 
-#firebaseからuser_idを通してビッグファイブデータを取得
+
+#会話パート何日間行うか
+talk_days = 1 
+#5日間の会話パート
+now = datetime.datetime.now()
+#会話パート開始日
+start_day = "2025-01-03" #仮
+start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
+#今日が会話パート何日目か計算
+now_day = (now - start_day_obj).days + 1
+
+
+#firebaseからuser_idを通してビッグファイブデータと会話データを取得
 doc_ref = db.collection("users").document(st.session_state['user_id'])
 doc = doc_ref.get()
 
 data = doc.to_dict()
 if data is None:
   prompt_bigfive = {}
+  talk_day_data = {}
 else:
   prompt_bigfive = data.get('bigfive', {})
+  talk_day_data = data.get('messages', {}).get(f'day{now_day}', {}).get('messages', {})
 
 # prompt_bigfiveの各値を変数として渡す
 extraversion = prompt_bigfive.get("extraversion", "N/A")
@@ -111,16 +125,7 @@ if not st.session_state['user_id']:
       st.error("IDが間違っています")
   st.stop()
 
-    
-
-#5日間の会話パート
-now = datetime.datetime.now()
-#会話パート開始日
-start_day = "2025-01-02" #仮
-start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
-#会話パート何日目か計算
-talk_day = (now - start_day_obj).days + 1
- 
+     
 #今日の日付が開始日よりも前の場合
 if now < start_day_obj:
   #ビッグファイブのアンケートに回答してない場合は認証させてアンケートリンクを表示する
@@ -131,32 +136,37 @@ if now < start_day_obj:
     st.write(f"会話パートは{start_day_obj.month}月{start_day_obj.day}日15時から開始できます。")
   st.stop()
 #5日間の後の場合
-elif talk_day > 5:
-  st.write("5日間の会話パートは終了しました。")
+elif now_day > talk_days:
+  st.write(f"{talk_days}日間の会話パートは終了しました。")
   st.stop()
 #今の時間が午後3時よりも前の場合
 elif now.hour < 15:
   st.write("会話は本日の15時から開始できます。")
   st.stop()
 else:
-  st.title(f"会話{talk_day}日目")
-
+  st.title(f"会話{now_day}日目")
 
 
 if st.session_state['user_id']:
   # 会話メッセージの履歴を表示
+  if talk_day_data != {}:
+    st.session_state["messages"] = talk_day_data
   for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
       st.markdown(message["content"])
 
-  if st.session_state.count == 5:
-    add_data('users', st.session_state['user_id'], {"messages": {"day": day, "messages": st.session_state["messages"]}})
-    if day < 5:
-      st.markdown('これで今日の会話は終了です。')
+  
+  #会話が5ターンずつ終了した場合
+  if talk_day_data != {} or st.session_state.count == 5:
+    if talk_day_data == {}: #firebaseにデータが格納されていなかったら格納する
+      add_data('users', st.session_state['user_id'], {"messages": {f"day{now_day}": {"messages": st.session_state["messages"]}}})
+    if now_day < talk_days:
+      st.markdown('本日の会話は終了です。')
     else:
-      st.markdown('これで5日間の会話パートは終了です。<a href="https://qualtricsxm3s9qj93mr.qualtrics.com/login#/surveys/SV_9Y4Ye1aiZf5nfy6>こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True)
-
-    st.markdown('これで本日の会話は終了です。')
+      st.markdown(
+        f'{talk_days}日間の会話パートは終了です。<br><a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_5b4FQikEOMWsjAO">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True
+      )
+    st.stop()
 
   #ユーザーの入力
   user_input = st.chat_input(placeholder="ユーザーの入力")
