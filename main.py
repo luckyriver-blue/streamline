@@ -10,6 +10,23 @@ from config import gpt
 import datetime
 
 
+#スタイリング
+st.markdown(
+  '''
+  <style>
+  .messages {
+    display: inline-block;
+    word-wrap: break-word;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 10px;
+  }
+  </style>
+  ''',
+  unsafe_allow_html=True
+)
+
+
 # Firebase Admin SDKの初期化
 if not firebase_admin._apps:
   cred = credentials.Certificate(firebase_credential)
@@ -36,7 +53,7 @@ talk_days = 1
 #5日間の会話パート
 now = datetime.datetime.now()
 #会話パート開始日
-start_day = "2025-01-03" #仮
+start_day = "2025-01-04" #仮
 start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
 #今日が会話パート何日目か計算
 now_day = (now - start_day_obj).days + 1
@@ -65,17 +82,17 @@ openness = prompt_bigfive.get("openness", "N/A")
 prompt_template = PromptTemplate(
   input_variables=["history", "input"],
   template=f"""
-  ユーザーの性格：
-  Extraversion: {extraversion}, 
-  Agreeableness: {agreeableness}, 
-  Conscientiousness: {conscientiousness}, 
-  Neuroticism: {neuroticism}, 
-  Openness: {openness}
+    ユーザーの性格：
+    Extraversion: {extraversion}, 
+    Agreeableness: {agreeableness}, 
+    Conscientiousness: {conscientiousness}, 
+    Neuroticism: {neuroticism}, 
+    Openness: {openness}
 
-  ユーザーの性格を参照して、ユーザーにとって最適な会話を心がけてください。
-  ユーザーの性格のスコアに直接的に言及しないでください。
-  300文字以内で回答してください。
-  以下は会話の履歴です：\n{{history}}\n\nユーザーの入力：{{input}}
+    ユーザーの性格を参照して、ユーザーにとって最適な会話を心がけてください。
+    ユーザーの性格のスコアに直接的に言及しないでください。
+    300文字以内で回答してください。
+    以下は会話の履歴です：\n{{history}}\n\nユーザーの入力：{{input}}
   """
 )
 
@@ -107,6 +124,17 @@ def add_data(collection_name, document_id, data):
   db.collection(collection_name).document(document_id).set(data, merge=True)
 
 
+#会話完了後の表示
+def display_after_complete():
+  if now_day < talk_days:
+    st.markdown('本日の会話は終了です。')
+  else:
+    st.markdown(
+      f'{talk_days}日間の会話パートは終了です。<br><a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_5b4FQikEOMWsjAO">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True
+    )
+  st.stop()
+
+
 #クエリパラメータからuser_idを取得（あれば）
 query_params = st.query_params
 if "user_id" in query_params:
@@ -120,6 +148,7 @@ if not st.session_state['user_id']:
   if user_id:
     if user_id in valid_ids:
       st.session_state['user_id'] = user_id
+      st.query_params.user_id = user_id
       st.rerun()
     else:
       st.error("IDが間違っています")
@@ -151,31 +180,47 @@ if st.session_state['user_id']:
   # 会話メッセージの履歴を表示
   if talk_day_data != {}:
     st.session_state["messages"] = talk_day_data
-  for message in st.session_state["messages"]:
-    with st.chat_message(message["role"]):
-      st.markdown(message["content"])
 
-  
-  #会話が5ターンずつ終了した場合
-  if talk_day_data != {} or st.session_state.count == 5:
-    if talk_day_data == {}: #firebaseにデータが格納されていなかったら格納する
-      add_data('users', st.session_state['user_id'], {"messages": {f"day{now_day}": {"messages": st.session_state["messages"]}}})
-    if now_day < talk_days:
-      st.markdown('本日の会話は終了です。')
+  for message in st.session_state["messages"]:
+    if message["role"] == "Human":
+      st.markdown(f'''
+      <div style="display: flex;">
+        <div style="display: flex; margin-left: auto; max-width: 60%;">
+          <div class="messages">{message["content"]}</div>
+        </div>
+      </div>
+      ''', unsafe_allow_html=True)
     else:
-      st.markdown(
-        f'{talk_days}日間の会話パートは終了です。<br><a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_5b4FQikEOMWsjAO">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True
-      )
-    st.stop()
+      with st.chat_message(message["role"]):
+        st.markdown(f'<div style="max-width: 70%;" class="messages">{message["content"]}</div>', unsafe_allow_html=True)
+
+  #会話終了後
+  if talk_day_data != {}:
+    display_after_complete()
+
 
   #ユーザーの入力
-  user_input = st.chat_input(placeholder="ユーザーの入力")
+  user_input = st.chat_input(placeholder="メッセージを入力してください")
 
   if user_input: 
-    with st.chat_message("Human"):
-      st.markdown(user_input)
+    st.markdown(f'''
+      <div style="display: flex;">
+        <div style="display: flex; margin-left: auto; max-width: 60%;">
+          <div class="messages">{user_input}</div>
+        </div>
+      </div>
+    ''',
+    unsafe_allow_html=True)
     st.session_state["messages"].append({"role": "Human", "content": user_input})
     with st.spinner("回答を入力中"):
-      st.session_state["messages"].append({"role": "AI", "content": get_response(user_input)})
+      AI_response = get_response(user_input)
+      st.session_state["messages"].append({"role": "AI", "content": AI_response})
+    with st.chat_message("assistant"):
+      st.markdown(f'<div style="max-width: 70%;" class="messages">{AI_response}</div>', unsafe_allow_html=True)
     st.session_state.count += 1
+    #会話が5ターンずつ終わった時
+    if st.session_state.count == 5:
+      add_data('users', st.session_state['user_id'], {"messages": {f"day{now_day}": {"messages": st.session_state["messages"]}}})
+      display_after_complete()
+
     st.rerun()
