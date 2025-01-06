@@ -7,10 +7,13 @@ from langchain_core.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 from config import gpt
+from hide_UI import hide_st_style
 import datetime
+import time
+import random
 
 
-#スタイリング
+#会話のスタイリング
 st.markdown(
   '''
   <style>
@@ -25,6 +28,52 @@ st.markdown(
   ''',
   unsafe_allow_html=True
 )
+
+#送信欄のスタイリング
+input_style = f"""
+<style>
+  .footer {{
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #ffffff;
+    padding: 5rem;
+  }}
+  .stTextArea {{
+    position: fixed;
+    bottom: 4rem;
+  }}
+  .stButton {{
+    position: fixed;
+    bottom: 1rem;
+    left: calc(105px + 63.5%);
+  }}
+</style>
+"""
+
+st.markdown(hide_st_style, unsafe_allow_html=True)
+st.markdown(input_style, unsafe_allow_html=True)
+
+#送信後最下部へスクロールするJavascript
+scroll_js = '''
+<script>
+    var sendButton = parent.document.querySelector('button[data-testid="stBaseButton-secondary"]');
+    if (sendButton) {
+        // ボタンのクリックイベントを監視
+        sendButton.addEventListener('click', function() {
+            // スクロール対象の要素を取得
+            var target = parent.document.querySelector('section.st-emotion-cache-bm2z3a');
+
+            if (target) {
+                // スクロールを最下部に移動
+                target.scrollTop = target.scrollHeight;
+            } else {
+                console.error("スクロール対象が見つかりません");
+            }
+        });
+    } 
+</script>
+'''
 
 
 # Firebase Admin SDKの初期化
@@ -41,8 +90,13 @@ if 'user_id' not in st.session_state:
   st.session_state['user_id'] = None
 if 'messages' not in st.session_state:
   st.session_state["messages"] = [{"role": "AI", "content": "今日は何がありましたか？"}]
+if "input" not in st.session_state:
+    st.session_state['input'] = ""
 if 'count' not in st.session_state:
   st.session_state.count = 0
+if 'placeholder' not in st.session_state:
+  st.session_state['placeholder'] = ""
+
 
 
 memory = ConversationBufferMemory()
@@ -53,13 +107,14 @@ talk_days = 1
 #5日間の会話パート
 now = datetime.datetime.now()
 #会話パート開始日
-start_day = "2025-01-04" #仮
+start_day = "2025-01-07" #仮
 start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
 #今日が会話パート何日目か計算
 now_day = (now - start_day_obj).days + 1
 
 
-#firebaseからuser_idを通してビッグファイブデータと会話データを取得
+
+#firebaseからuser_idを通してビッグファイブデータと会話データを取得する
 doc_ref = db.collection("users").document(st.session_state['user_id'])
 doc = doc_ref.get()
 
@@ -119,6 +174,53 @@ def get_valid_ids():
   return valid_ids
 
 
+# 会話メッセージの履歴を表示
+def show_messages():
+  if talk_day_data != {}:
+    st.session_state["messages"] = talk_day_data
+
+  for i, message in enumerate(st.session_state["messages"]):
+    if message["role"] == "Human":
+      st.markdown(f'''
+      <div style="display: flex;">
+        <div style="display: flex; margin-left: auto; max-width: 60%;">
+          <div class="messages">{message["content"]}</div>
+        </div>
+      </div>
+      ''', unsafe_allow_html=True)
+      if i != 9 and i == len(st.session_state["messages"]) - 2:
+        with st.spinner("応答を生成しています"):
+          #応答の生成時間(ダミー)
+          sleep_time = random.choice([1, 1.5, 2])
+          time.sleep(sleep_time)
+    else:
+      if i != 10 and i == len(st.session_state["messages"]) - 1:
+        with st.spinner("応答を生成しています"):
+          with st.chat_message(message["role"]):
+            st.markdown(f'<div style="max-width: 70%;" class="messages">{message["content"]}</div>', unsafe_allow_html=True)
+      else:
+          with st.chat_message(message["role"]):
+            st.markdown(f'<div style="max-width: 70%;" class="messages">{message["content"]}</div>', unsafe_allow_html=True)
+      
+
+
+#送信ボタンが押されたとき
+def send_message():
+  input = st.session_state['input']
+  if input == "":
+    st.session_state['placeholder'] = "メッセージを入力してください！"
+    return
+  else:
+    st.session_state['input'] = ""
+    st.session_state['placeholder'] = ""
+    st.session_state["messages"].append({"role": "Human", "content": input})
+    st.session_state["messages"].append({"role": "AI", "content": get_response(input)})
+    st.session_state.count += 1
+    #会話が5ターンずつ終わった時
+    if st.session_state.count == 5:
+      add_data('users', st.session_state['user_id'], {"messages": {f"day{now_day}": {"messages": st.session_state["messages"]}}})
+
+
 # データの追加の関数
 def add_data(collection_name, document_id, data):
   db.collection(collection_name).document(document_id).set(data, merge=True)
@@ -169,58 +271,32 @@ elif now_day > talk_days:
   st.write(f"{talk_days}日間の会話パートは終了しました。")
   st.stop()
 #今の時間が午後3時よりも前の場合
-elif now.hour < 15:
+elif now.hour < 0:
   st.write("会話は本日の15時から開始できます。")
   st.stop()
 else:
   st.title(f"会話{now_day}日目")
 
 
-if st.session_state['user_id']:
-  # 会話メッセージの履歴を表示
-  if talk_day_data != {}:
-    st.session_state["messages"] = talk_day_data
 
-  for message in st.session_state["messages"]:
-    if message["role"] == "Human":
-      st.markdown(f'''
-      <div style="display: flex;">
-        <div style="display: flex; margin-left: auto; max-width: 60%;">
-          <div class="messages">{message["content"]}</div>
-        </div>
-      </div>
-      ''', unsafe_allow_html=True)
-    else:
-      with st.chat_message(message["role"]):
-        st.markdown(f'<div style="max-width: 70%;" class="messages">{message["content"]}</div>', unsafe_allow_html=True)
+if st.session_state['user_id']:
+  #会話の履歴を常に表示
+  show_messages()
 
   #会話終了後
   if talk_day_data != {}:
     display_after_complete()
 
+  st.components.v1.html(scroll_js)
 
-  #ユーザーの入力
-  user_input = st.chat_input(placeholder="メッセージを入力してください")
 
-  if user_input: 
-    st.markdown(f'''
-      <div style="display: flex;">
-        <div style="display: flex; margin-left: auto; max-width: 60%;">
-          <div class="messages">{user_input}</div>
-        </div>
-      </div>
-    ''',
-    unsafe_allow_html=True)
-    st.session_state["messages"].append({"role": "Human", "content": user_input})
-    with st.spinner("回答を入力中"):
-      AI_response = get_response(user_input)
-      st.session_state["messages"].append({"role": "AI", "content": AI_response})
-    with st.chat_message("assistant"):
-      st.markdown(f'<div style="max-width: 70%;" class="messages">{AI_response}</div>', unsafe_allow_html=True)
-    st.session_state.count += 1
-    #会話が5ターンずつ終わった時
-    if st.session_state.count == 5:
-      add_data('users', st.session_state['user_id'], {"messages": {f"day{now_day}": {"messages": st.session_state["messages"]}}})
-      display_after_complete()
-
-    st.rerun()
+  # フッターのように入力欄を下部に固定
+  st.markdown('<div class="footer">', unsafe_allow_html=True)
+  st.text_area(
+    "input message", 
+    key="input", 
+    height=68,
+    placeholder=st.session_state['placeholder'],
+    label_visibility="collapsed",
+  )
+  st.button("送信", on_click=send_message)
