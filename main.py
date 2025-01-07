@@ -233,7 +233,7 @@ if not st.session_state['user_id']:
 #今日の日付が開始日よりも前の場合
 if now < start_day_obj:
   #ビッグファイブのアンケートに回答してない場合は認証させてアンケートリンクを表示する
-  if read_firebase_data.prompt_bigfive == {}:
+  if prompt_bigfive == {}:
     st.markdown(f'<a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_4N1LfAYkc9TrY8u?user_id={st.session_state["user_id"]}" target="_blank">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True)
   #ビッグファイブのアンケートに回答済みの場合
   else:
