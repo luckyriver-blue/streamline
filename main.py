@@ -233,7 +233,7 @@ def display_after_complete():
     st.markdown('本日の会話は終了です。')
   else:
     st.markdown(
-      f'{talk_days}日間の会話パートは終了です。<br><a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_5b4FQikEOMWsjAO">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True
+      f'{talk_days}日間の会話パートは終了です。<br><a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_5b4FQikEOMWsjAO?user_id={st.session_state["user_id"]}">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True
     )
   st.stop()
 
