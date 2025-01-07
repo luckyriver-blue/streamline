@@ -238,20 +238,28 @@ def display_after_complete():
   st.stop()
 
 
+
+valid_ids = get_valid_ids() #有効なユーザーID
 #クエリパラメータからuser_idを取得（あれば）
-query_params = st.query_params
+query_params = st.experimental_get_query_params()
 if "user_id" in query_params:
-  st.session_state["user_id"] = query_params.get('user_id', [None])[0]
+  query_user_id = query_params.get('user_id', [None])[0]
+  if query_user_id not in valid_ids:
+    st.session_state["user_id"] = None
+  else:
+    print(query_user_id)
+    st.session_state["user_id"] = query_user_id
+
 
 
 #ログイン（実験参加者のid認証）
-valid_ids = get_valid_ids()
 if not st.session_state['user_id']:
   user_id = st.text_input("IDを半角で入力してエンターを押してください")
   if user_id:
     if user_id in valid_ids:
       st.session_state['user_id'] = user_id
-      st.query_params.user_id = user_id
+      query_params['user_id'] = user_id
+      new_url = st.experimental_set_query_params(**query_params)
       st.rerun()
     else:
       st.error("IDが間違っています")
