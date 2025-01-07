@@ -1,17 +1,14 @@
 import streamlit as st
-from config import firebase_credential
+from read_secret_data import openai_key, firebase_project_settings
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, firestore
 from langchain_core.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
-from config import gpt
+from langchain_openai import ChatOpenAI
 from style_and_javascript.style import hide_st_style, message_style, input_style
 from style_and_javascript.javascript import scroll_js
-import datetime
-import time
-import random
+import datetime, time, random
 
 #スタイリング
 st.markdown(hide_st_style, unsafe_allow_html=True)
@@ -21,7 +18,7 @@ st.markdown(input_style, unsafe_allow_html=True)
 
 # Firebase Admin SDKの初期化
 if not firebase_admin._apps:
-  cred = credentials.Certificate(firebase_credential)
+  cred = credentials.Certificate(firebase_project_settings)
   firebase_admin.initialize_app(cred)
 
 # Firestoreのインスタンスを取得
@@ -53,7 +50,7 @@ talk_days = 1
 #5日間の会話パート
 now = datetime.datetime.now()
 #会話パート開始日
-start_day = "2025-01-07" #仮
+start_day = "2025-01-08" #仮
 start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
 #今日が会話パート何日目か計算
 now_day = (now - start_day_obj).days + 1
@@ -131,6 +128,14 @@ prompt_template = PromptTemplate(
     300文字以内で回答してください。
     以下は会話の履歴です：\n{{history}}\n\nユーザーの入力：{{input}}
   """
+)
+
+gpt = ChatOpenAI(
+    model_name="gpt-4o",
+    max_tokens=1024,
+    temperature=0.5,
+    frequency_penalty=0.02,
+    openai_api_key=openai_key
 )
 
 conversation = ConversationChain(
@@ -228,7 +233,7 @@ if not st.session_state['user_id']:
 #今日の日付が開始日よりも前の場合
 if now < start_day_obj:
   #ビッグファイブのアンケートに回答してない場合は認証させてアンケートリンクを表示する
-  if read_firebase_data.prompt_bigfive == {}:
+  if prompt_bigfive == {}:
     st.markdown(f'<a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_4N1LfAYkc9TrY8u?user_id={st.session_state["user_id"]}" target="_blank">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True)
   #ビッグファイブのアンケートに回答済みの場合
   else:
