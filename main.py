@@ -272,7 +272,7 @@ if st.session_state['user_id']:
   show_messages()
 
   #会話終了後
-  if talk_day_data != {}:
+  if talk_day_data != {} or st.session_state.count >= 5:
     display_after_complete()
 
   st.components.v1.html(scroll_js)
