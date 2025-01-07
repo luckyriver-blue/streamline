@@ -7,73 +7,16 @@ from langchain_core.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 from config import gpt
-from hide_UI import hide_st_style
+from style_and_javascript.style import hide_st_style, message_style, input_style
+from style_and_javascript.javascript import scroll_js
 import datetime
 import time
 import random
 
-
-#会話のスタイリング
-st.markdown(
-  '''
-  <style>
-  .messages {
-    display: inline-block;
-    word-wrap: break-word;
-    background-color: #f0f0f0;
-    padding: 10px;
-    border-radius: 10px;
-  }
-  </style>
-  ''',
-  unsafe_allow_html=True
-)
-
-#送信欄のスタイリング
-input_style = f"""
-<style>
-  .footer {{
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #ffffff;
-    padding: 5rem;
-  }}
-  .stTextArea {{
-    position: fixed;
-    bottom: 4rem;
-  }}
-  .stButton {{
-    position: fixed;
-    bottom: 1rem;
-    left: calc(105px + 63.5%);
-  }}
-</style>
-"""
-
+#スタイリング
 st.markdown(hide_st_style, unsafe_allow_html=True)
+st.markdown(message_style, unsafe_allow_html=True)
 st.markdown(input_style, unsafe_allow_html=True)
-
-#送信後最下部へスクロールするJavascript
-scroll_js = '''
-<script>
-    var sendButton = parent.document.querySelector('button[data-testid="stBaseButton-secondary"]');
-    if (sendButton) {
-        // ボタンのクリックイベントを監視
-        sendButton.addEventListener('click', function() {
-            // スクロール対象の要素を取得
-            var target = parent.document.querySelector('section.st-emotion-cache-bm2z3a');
-
-            if (target) {
-                // スクロールを最下部に移動
-                target.scrollTop = target.scrollHeight;
-            } else {
-                console.error("スクロール対象が見つかりません");
-            }
-        });
-    } 
-</script>
-'''
 
 
 # Firebase Admin SDKの初期化
@@ -100,7 +43,6 @@ if 'count' not in st.session_state:
   st.session_state.count = 0
 if 'placeholder' not in st.session_state:
   st.session_state['placeholder'] = ""
-
 
 
 memory = ConversationBufferMemory()
@@ -160,7 +102,6 @@ if st.session_state['prompt_bigfive'] is None:
   prompt_bigfive, talk_day_data = read_firebase_data()
   st.session_state['prompt_bigfive'] = prompt_bigfive
   st.session_state['talk_day_data'] = talk_day_data
-  print('あああああああ')
 else:
   prompt_bigfive = st.session_state['prompt_bigfive']
   talk_day_data = st.session_state['talk_day_data']
