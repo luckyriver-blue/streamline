@@ -79,6 +79,8 @@ if "user_id" in query_params:
     else:
       st.session_state["user_id"] = query_user_id
       st.rerun()
+else:
+  st.session_state['user_id'] = None
 
 
 #firebaseからuser_idを通してビッグファイブデータと会話データを取得する
@@ -225,11 +227,22 @@ if not st.session_state['user_id']:
     if user_id in valid_ids:
       st.session_state['user_id'] = user_id
       query_params['user_id'] = user_id
-      new_url = st.experimental_set_query_params(**query_params)
+      st.experimental_set_query_params(**query_params)
       st.rerun()
     else:
       st.error("IDが間違っています")
   st.stop()
+
+
+#ログイン後にデータを都度確認してなければ読み込む
+if st.session_state['prompt_bigfive'] is None:
+  prompt_bigfive, talk_day_data = read_firebase_data()
+  st.session_state['prompt_bigfive'] = prompt_bigfive
+  st.session_state['talk_day_data'] = talk_day_data
+else:
+  prompt_bigfive = st.session_state['prompt_bigfive']
+  talk_day_data = st.session_state['talk_day_data']
+
 
      
 #今日の日付が開始日よりも前の場合
