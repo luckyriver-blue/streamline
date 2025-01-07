@@ -8,7 +8,7 @@ from langchain.chains import ConversationChain
 from langchain_openai import ChatOpenAI
 from style_and_javascript.style import hide_st_style, message_style, input_style
 from style_and_javascript.javascript import scroll_js
-import datetime, time, random
+import datetime, pytz, time, random
 
 #スタイリング
 st.markdown(hide_st_style, unsafe_allow_html=True)
@@ -48,7 +48,7 @@ memory = ConversationBufferMemory()
 #会話パート何日間行うか
 talk_days = 1 
 #5日間の会話パート
-now = datetime.datetime.now()
+now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
 #会話パート開始日
 start_day = "2025-01-08" #仮
 start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
