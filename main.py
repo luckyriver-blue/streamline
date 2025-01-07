@@ -1,8 +1,7 @@
 import streamlit as st
-import os
+from read_secret_data import openai_key, firebase_project_settings
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, firestore
 from langchain_core.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
@@ -17,14 +16,9 @@ st.markdown(message_style, unsafe_allow_html=True)
 st.markdown(input_style, unsafe_allow_html=True)
 
 
-#secretsデータ
-openai_key = os.environ["OPENAI_API_KEY"]
-firebase_credential = os.environ["FIREBASE_CREDENTIAL"]
-
-
 # Firebase Admin SDKの初期化
 if not firebase_admin._apps:
-  cred = credentials.Certificate(firebase_credential)
+  cred = credentials.Certificate(firebase_project_settings)
   firebase_admin.initialize_app(cred)
 
 # Firestoreのインスタンスを取得
