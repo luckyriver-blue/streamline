@@ -52,6 +52,8 @@ now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
 #会話パート開始日
 start_day = "2025-01-08" #仮
 start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
+# タイムゾーンを付与
+start_day_obj = pytz.timezone('Asia/Tokyo').localize(start_day_obj)
 #今日が会話パート何日目か計算
 now_day = (now - start_day_obj).days + 1
 
