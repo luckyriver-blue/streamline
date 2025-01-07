@@ -1,22 +1,25 @@
 import streamlit as st
-from config import firebase_credential
+import os
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from langchain_core.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
-from config import gpt
+from langchain_openai import ChatOpenAI
 from style_and_javascript.style import hide_st_style, message_style, input_style
 from style_and_javascript.javascript import scroll_js
-import datetime
-import time
-import random
+import datetime, time, random
 
 #スタイリング
 st.markdown(hide_st_style, unsafe_allow_html=True)
 st.markdown(message_style, unsafe_allow_html=True)
 st.markdown(input_style, unsafe_allow_html=True)
+
+
+#secretsデータ
+openai_key = os.environ["OPENAI_API_KEY"]
+firebase_credential = os.environ["FIREBASE_CREDENTIAL"]
 
 
 # Firebase Admin SDKの初期化
@@ -131,6 +134,14 @@ prompt_template = PromptTemplate(
     300文字以内で回答してください。
     以下は会話の履歴です：\n{{history}}\n\nユーザーの入力：{{input}}
   """
+)
+
+gpt = ChatOpenAI(
+    model_name="gpt-4o",
+    max_tokens=1024,
+    temperature=0.5,
+    frequency_penalty=0.02,
+    openai_api_key=openai_key
 )
 
 conversation = ConversationChain(
