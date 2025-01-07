@@ -88,6 +88,10 @@ db = firestore.client()
 # セッションステートの初期化
 if 'user_id' not in st.session_state:
   st.session_state['user_id'] = None
+if 'prompt_bigfive' not in st.session_state:
+  st.session_state['prompt_bigfive'] = None
+if 'talk_day_data' not in st.session_state:
+  st.session_state['talk_day_data'] = None
 if 'messages' not in st.session_state:
   st.session_state["messages"] = [{"role": "AI", "content": "今日は何がありましたか？"}]
 if "input" not in st.session_state:
@@ -113,18 +117,54 @@ start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
 now_day = (now - start_day_obj).days + 1
 
 
+#Firebaseから有効な参加者IDを取得する関数
+def get_valid_ids():
+  valid_ids = []
+  users = db.collection('users').stream()
+
+  for user in users:
+    valid_ids.append(user.id)
+  
+  return valid_ids
+
+valid_ids = get_valid_ids() #有効なユーザーID
+#クエリパラメータからuser_idを取得（あれば）
+query_params = st.experimental_get_query_params()
+if "user_id" in query_params:
+  query_user_id = query_params.get('user_id', [None])[0]
+  if query_user_id != st.session_state['user_id']:
+    if query_user_id not in valid_ids:
+      st.session_state["user_id"] = None
+    else:
+      st.session_state["user_id"] = query_user_id
+      st.rerun()
+
 
 #firebaseからuser_idを通してビッグファイブデータと会話データを取得する
-doc_ref = db.collection("users").document(st.session_state['user_id'])
-doc = doc_ref.get()
+def read_firebase_data():
+  doc_ref = db.collection("users").document(st.session_state['user_id'])
+  doc = doc_ref.get()
 
-data = doc.to_dict()
-if data is None:
-  prompt_bigfive = {}
-  talk_day_data = {}
+  data = doc.to_dict()
+  if data is None:
+    prompt_bigfive = {}
+    talk_day_data = {}
+  else:
+    prompt_bigfive = data.get('bigfive', {})
+    talk_day_data = data.get('messages', {}).get(f'day{now_day}', {}).get('messages', {})
+
+  return prompt_bigfive, talk_day_data
+
+
+if st.session_state['prompt_bigfive'] is None:
+  prompt_bigfive, talk_day_data = read_firebase_data()
+  st.session_state['prompt_bigfive'] = prompt_bigfive
+  st.session_state['talk_day_data'] = talk_day_data
+  print('あああああああ')
 else:
-  prompt_bigfive = data.get('bigfive', {})
-  talk_day_data = data.get('messages', {}).get(f'day{now_day}', {}).get('messages', {})
+  prompt_bigfive = st.session_state['prompt_bigfive']
+  talk_day_data = st.session_state['talk_day_data']
+
 
 # prompt_bigfiveの各値を変数として渡す
 extraversion = prompt_bigfive.get("extraversion", "N/A")
@@ -164,15 +204,6 @@ def get_response(user_input):
   return conversation.predict(input=user_input)
 
 
-#Firebaseから有効な参加者IDを取得する関数
-def get_valid_ids():
-  valid_ids = []
-  users = db.collection('users').stream()
-
-  for user in users:
-    valid_ids.append(user.id)
-  
-  return valid_ids
 
 
 # 会話メッセージの履歴を表示
@@ -239,19 +270,6 @@ def display_after_complete():
 
 
 
-valid_ids = get_valid_ids() #有効なユーザーID
-#クエリパラメータからuser_idを取得（あれば）
-query_params = st.experimental_get_query_params()
-if "user_id" in query_params:
-  query_user_id = query_params.get('user_id', [None])[0]
-  if query_user_id not in valid_ids:
-    st.session_state["user_id"] = None
-  else:
-    print(query_user_id)
-    st.session_state["user_id"] = query_user_id
-
-
-
 #ログイン（実験参加者のid認証）
 if not st.session_state['user_id']:
   user_id = st.text_input("IDを半角で入力してエンターを押してください")
@@ -269,7 +287,7 @@ if not st.session_state['user_id']:
 #今日の日付が開始日よりも前の場合
 if now < start_day_obj:
   #ビッグファイブのアンケートに回答してない場合は認証させてアンケートリンクを表示する
-  if prompt_bigfive == {}:
+  if read_firebase_data.prompt_bigfive == {}:
     st.markdown(f'<a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_4N1LfAYkc9TrY8u?user_id={st.session_state["user_id"]}" target="_blank">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True)
   #ビッグファイブのアンケートに回答済みの場合
   else:
