@@ -245,30 +245,28 @@ else:
   talk_day_data = st.session_state['talk_day_data']
 
 
-     
-#今日の日付が開始日よりも前の場合
-if now < start_day_obj:
-  #ビッグファイブのアンケートに回答してない場合は認証させてアンケートリンクを表示する
-  if prompt_bigfive == {}:
-    st.markdown(f'<a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_4N1LfAYkc9TrY8u?user_id={st.session_state["user_id"]}" target="_blank">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True)
-  #ビッグファイブのアンケートに回答済みの場合
-  else:
-    st.write(f"会話パートは{start_day_obj.month}月{start_day_obj.day}日15時から開始できます。")
-  st.stop()
-#5日間の後の場合
-elif now_day > talk_days:
-  st.write(f"{talk_days}日間の会話パートは終了しました。")
-  st.stop()
-#今の時間が午後3時よりも前の場合
-elif now.hour < 15:
-  st.write("会話は本日の15時から開始できます。")
-  st.stop()
-else:
-  st.title(f"会話{now_day}日目")
-
-
 
 if st.session_state['user_id']:
+  #今日の日付が開始日よりも前の場合
+  if now < start_day_obj:
+    #ビッグファイブのアンケートに回答してない場合は認証させてアンケートリンクを表示する
+    if prompt_bigfive == {}:
+      st.markdown(f'<a href="https://nagoyapsychology.qualtrics.com/jfe/form/SV_4N1LfAYkc9TrY8u?user_id={st.session_state["user_id"]}" target="_blank">こちら</a>をクリックしてアンケートに回答してください。', unsafe_allow_html=True)
+    else:
+      st.write(f"会話パートは{start_day_obj.month}月{start_day_obj.day}日15時から開始できます。")
+    st.stop()
+  #5日間の後の場合
+  elif now_day > talk_days:
+    st.write(f"{talk_days}日間の会話パートは終了しました。")
+    st.stop()
+  #今の時間が午後3時よりも前の場合
+  elif now.hour < 15:
+    st.write("会話は本日の15時から開始できます。")
+    st.stop()
+  else:
+    st.title(f"会話{now_day}日目")
+
+
   #会話の履歴を常に表示
   show_messages()
 
