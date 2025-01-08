@@ -226,8 +226,9 @@ if not st.session_state['user_id']:
   if user_id:
     if user_id in valid_ids:
       st.session_state['user_id'] = user_id
-      query_params['user_id'] = user_id
-      st.experimental_set_query_params(**query_params)
+      new_query_params = query_params.copy()
+      new_query_params['user_id'] = [user_id]
+      st.experimental_set_query_params(**new_query_params)
       st.rerun()
     else:
       st.error("IDが間違っています")
