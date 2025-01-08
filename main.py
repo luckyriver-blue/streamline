@@ -46,11 +46,11 @@ memory = ConversationBufferMemory()
 
 
 #会話パート何日間行うか
-talk_days = 1 
+talk_days = 3 
 #5日間の会話パート
 now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
 #会話パート開始日
-start_day = "2025-01-08" #仮
+start_day = "2025-01-09" #仮
 start_day_obj = datetime.datetime.strptime(start_day, "%Y-%m-%d")
 # タイムゾーンを付与
 start_day_obj = pytz.timezone('Asia/Tokyo').localize(start_day_obj)
@@ -260,7 +260,7 @@ elif now_day > talk_days:
   st.write(f"{talk_days}日間の会話パートは終了しました。")
   st.stop()
 #今の時間が午後3時よりも前の場合
-elif now.hour < 0:
+elif now.hour < 15:
   st.write("会話は本日の15時から開始できます。")
   st.stop()
 else:
