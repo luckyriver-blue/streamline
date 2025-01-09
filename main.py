@@ -29,7 +29,7 @@ db = firestore.client()
 if 'user_id' not in st.session_state:
   st.session_state['user_id'] = None
 if 'prompt_bigfive' not in st.session_state:
-  st.session_state['prompt_bigfive'] = None
+  st.session_state['prompt_bigfive'] = {}
 if 'talk_day_data' not in st.session_state:
   st.session_state['talk_day_data'] = None
 if 'messages' not in st.session_state:
@@ -99,7 +99,7 @@ def read_firebase_data():
   return prompt_bigfive, talk_day_data
 
 
-if st.session_state['prompt_bigfive'] is None:
+if st.session_state['prompt_bigfive'] == {}:
   prompt_bigfive, talk_day_data = read_firebase_data()
   st.session_state['prompt_bigfive'] = prompt_bigfive
   st.session_state['talk_day_data'] = talk_day_data
@@ -236,7 +236,7 @@ if not st.session_state['user_id']:
 
 
 #ログイン後にデータを都度確認してなければ読み込む
-if st.session_state['prompt_bigfive'] is None:
+if st.session_state['prompt_bigfive'] == {}:
   prompt_bigfive, talk_day_data = read_firebase_data()
   st.session_state['prompt_bigfive'] = prompt_bigfive
   st.session_state['talk_day_data'] = talk_day_data
