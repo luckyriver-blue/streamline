@@ -14,7 +14,7 @@ bigfive_csv = os.path.join(bigfive_directory, bigfive_csv_name)
 qualtrics_data = pd.read_csv(bigfive_csv)
 
 #すべてのユーザーのデータを処理するためループで回す
-users = ['1', '2', '3']
+users = ['1', '2', '3', '0116', '0720', '1014']
 for user_id in users:
   #user_idで該当の行を取り出す
   user_data = qualtrics_data.loc[qualtrics_data['user_id'] == user_id]
