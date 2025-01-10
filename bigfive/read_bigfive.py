@@ -2,7 +2,8 @@ import os
 import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, firestore
-from config import firebase_credential
+from read_secret_data import firebase_project_settings
+
 
 parent_directory = os.path.abspath(os.path.join('read_bigfive.py', '..'))
 bigfive_directory = os.path.join(parent_directory, 'data', 'experiment_data', 'bigfive_data')
@@ -43,7 +44,7 @@ for user_id in users:
 
   #Firebaseにビッグファイブデータを保存
   if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_credential)
+    cred = credentials.Certificate(firebase_project_settings)
     firebase_admin.initialize_app(cred)
 
   db = firestore.client()
