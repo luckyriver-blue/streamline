@@ -2,7 +2,8 @@ import os
 import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, firestore
-from config import firebase_credential
+from read_secret_data import firebase_project_settings
+
 
 parent_directory = os.path.abspath(os.path.join('read_bigfive.py', '..'))
 bigfive_directory = os.path.join(parent_directory, 'data', 'experiment_data', 'bigfive_data')
@@ -13,7 +14,7 @@ bigfive_csv = os.path.join(bigfive_directory, bigfive_csv_name)
 qualtrics_data = pd.read_csv(bigfive_csv)
 
 #すべてのユーザーのデータを処理するためループで回す
-users = ['1', '2', '3']
+users = ['1', '2', '3', '0116', '0720', '1014']
 for user_id in users:
   #user_idで該当の行を取り出す
   user_data = qualtrics_data.loc[qualtrics_data['user_id'] == user_id]
@@ -43,7 +44,7 @@ for user_id in users:
 
   #Firebaseにビッグファイブデータを保存
   if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_credential)
+    cred = credentials.Certificate(firebase_project_settings)
     firebase_admin.initialize_app(cred)
 
   db = firestore.client()
