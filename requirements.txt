@@ -32,7 +32,7 @@ google-auth-oauthlib==1.2.1
 google-cloud-core==2.4.1
 google-cloud-firestore==2.19.0
 google-cloud-storage==2.18.2
-google-crc32c>=1.0.0,<2.0.0
+google-crc32c==1.6.0
 google-resumable-media==2.7.2
 googleapis-common-protos==1.65.0
 grpcio==1.67.1
@@ -71,7 +71,7 @@ pip==24.3.1
 propcache==0.2.0
 proto-plus==1.25.0
 protobuf==5.28.2
-pyarrow==12.0.1 --only-binary=:all:
+pyarrow==12.0.1
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pycparser==2.22
