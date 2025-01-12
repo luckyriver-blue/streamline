@@ -278,7 +278,7 @@ if st.session_state['user_id']:
 
 
   # フッターのように入力欄を下部に固定
-  st.markdown('<div class="footer">', unsafe_allow_html=True)
+  st.markdown('<div class="foooter">', unsafe_allow_html=True)
   st.text_area(
     "input message", 
     key="input", 

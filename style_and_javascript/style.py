@@ -20,7 +20,7 @@ hide_st_style = '''
   height: 0%;
   }
   footer {
-  visibility: hidden !importabt;
+  visibility: hidden;
   height: 0%;
   }
   .appview-container .main .block-container{
@@ -37,12 +37,6 @@ hide_st_style = '''
   }
   header[data-testid="stHeader"] {
       z-index: -1;
-  }
-  div[data-testid="stToolbar"] {
-  z-index: 100;
-  }
-  div[data-testid="stDecoration"] {
-  z-index: 100;
   }
 </style>
 '''
