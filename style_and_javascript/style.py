@@ -66,12 +66,12 @@ input_style = '''
   }
   .stTextArea {
     position: fixed;
-    bottom: 4rem;
+    bottom: 6rem;
   }
   .stButton {
     position: fixed;
-    bottom: 1rem;
-    left: calc(105px + 63.5%);
+    bottom: 3rem;
+    left: calc(98px + 58.5%);
   }
 </style>
 '''
