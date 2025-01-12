@@ -77,7 +77,7 @@ input_style = '''
   .stButton {
     position: fixed;
     bottom: 1rem;
-    left: calc(105px + 63.5%);
+    left: calc(105px + 58.5%);
   }
 </style>
 '''
