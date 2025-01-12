@@ -20,7 +20,7 @@ hide_st_style = '''
   height: 0%;
   }
   footer {
-  visibility: hidden;
+  visibility: hidden !importabt;
   height: 0%;
   }
   .appview-container .main .block-container{
